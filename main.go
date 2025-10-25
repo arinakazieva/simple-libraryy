@@ -3,66 +3,102 @@ package main
 import "fmt"
 
 func main() {
-	myLibrary := Library{
-		Books: []Book{
-			{ID: 1, Title: "Война и мир", Author: "Лев Толстой", Year: 1869, IsIssued: false},
-			{ID: 2, Title: "Преступление и наказание", Author: "Федор Достоевский", Year: 1866, IsIssued: false},
-		},
-		Readers: []Reader{
-			{ID: 1, Name: "Иван Иванов"},
-			{ID: 2, Name: "Петр Петров"},
-		},
-	}
+	fmt.Println("Запуск системы управления библиотекой...")
 
-	fmt.Println("=== Тестирование выдачи книги ===")
-	err := myLibrary.IssueBookToReader(1, 1)
+	myLibrary := &Library{}
+
+	fmt.Println("\n--- Наполняем библиотеку ---")
+
+	reader1, err := myLibrary.AddReader("Агунда", "Кокойты")
 	if err != nil {
-		fmt.Printf("Ошибка при выдаче книги: %v\n", err)
+		fmt.Printf("Ошибка при добавлении читателя: %v\n", err)
 	} else {
-		fmt.Println("Книга успешно выдана!")
+		fmt.Printf("Зарегистрирован новый читатель: %s\n", reader1)
 	}
 
-	fmt.Println("\n=== Тестирование возврата книги ===")
+	reader2, err := myLibrary.AddReader("Сергей", "Меняйло")
+	if err != nil {
+		fmt.Printf("Ошибка при добавлении читателя: %v\n", err)
+	} else {
+		fmt.Printf("Зарегистрирован новый читатель: %s\n", reader2)
+	}
+
+	book1, err := myLibrary.AddBook("1984", "Джордж Оруэлл", 1949)
+	if err != nil {
+		fmt.Printf("Ошибка при добавлении книги: %v\n", err)
+	} else {
+		fmt.Printf("Добавлена новая книга: %s\n", book1)
+	}
+
+	book2, err := myLibrary.AddBook("Мастер и Маргарита", "Михаил Булгаков", 1967)
+	if err != nil {
+		fmt.Printf("Ошибка при добавлении книги: %v\n", err)
+	} else {
+		fmt.Printf("Добавлена новая книга: %s\n", book2)
+	}
+
+	_, err = myLibrary.AddBook("1984", "Джордж Оруэлл", 1949)
+	if err != nil {
+		fmt.Printf("Ожидаемая ошибка (дубликат книги): %v\n", err)
+	}
+
+	fmt.Println("\n--- Библиотека готова к работе ---")
+	fmt.Println("Количество читателей:", len(myLibrary.Readers))
+	fmt.Println("Количество книг:", len(myLibrary.Books))
+
+	fmt.Println("\n=== Успешная выдача книги ===")
+	err = myLibrary.IssueBookToReader(1, 1)
+	if err != nil {
+		fmt.Printf("Ошибка выдачи: %v\n", err)
+	} else {
+		fmt.Printf("Книга '1984' успешно выдана читателю Агунда Кокойты!\n")
+	}
+
+	fmt.Println("\n=== Попытка выдать уже выданную книгу ===")
+	err = myLibrary.IssueBookToReader(1, 2)
+	if err != nil {
+		fmt.Printf("Ожидаемая ошибка: %v\n", err)
+	} else {
+		fmt.Println("Книга выдана!")
+	}
+
+	fmt.Println("\n=== Попытка выдать книгу несуществующему читателю ===")
+	err = myLibrary.IssueBookToReader(2, 99)
+	if err != nil {
+		fmt.Printf("Ожидаемая ошибка: %v\n", err)
+	} else {
+		fmt.Println("Книга выдана!")
+	}
+
+	fmt.Println("\n===Успешный возврат книги ===")
 	err = myLibrary.ReturnBook(1)
 	if err != nil {
-		fmt.Printf("Ошибка при возврате книги: %v\n", err)
+		fmt.Printf("Ошибка возврата: %v\n", err)
 	} else {
-		fmt.Println("Книга успешно возвращена в библиотеку!")
+		fmt.Println("Книга '1984' успешно возвращена в библиотеку!")
 	}
 
-	fmt.Println("\n=== Тестирование повторного возврата книги ===")
+	fmt.Println("\n===Попытка вернуть книгу, которая уже в библиотеке ===")
 	err = myLibrary.ReturnBook(1)
 	if err != nil {
-		fmt.Printf("Ошибка при возврате книги: %v\n", err)
+		fmt.Printf("Ожидаемая ошибка: %v\n", err)
 	} else {
-		fmt.Println("Книга успешно возвращена в библиотеку!")
+		fmt.Println("Книга возвращена!")
 	}
 
-	fmt.Println("\n=== Тестирование с несуществующей книгой ===")
+	fmt.Println("\n--- Финальный статус библиотеки ---")
+	fmt.Println("Количество читателей:", len(myLibrary.Readers))
+	fmt.Println("Количество книг:", len(myLibrary.Books))
 
-	err = myLibrary.ReturnBook(999)
-	if err != nil {
-		fmt.Printf("Ошибка при возврате книги: %v\n", err)
-	} else {
-		fmt.Println("Книга успешно возвращена в библиотеку!")
+	fmt.Println("\nСтатус всех книг:")
+	for _, book := range myLibrary.Books {
+		status := "в библиотеке"
+		if book.IsIssued {
+			reader, _ := myLibrary.FindReaderByID(book.ReaderID)
+			status = fmt.Sprintf("выдана читателю: %s", reader)
+		}
+		fmt.Printf("  - %s: %s\n", book.Title, status)
 	}
 
-	fmt.Println("\n=== Тестирование функции GetPortFromConfig ===")
-
-	configWithPort := map[string]string{"PORT": "8080", "HOST": "localhost"}
-	configWithoutPort := map[string]string{"HOST": "localhost", "TIMEOUT": "30s"}
-
-	port1, err1 := GetPortFromConfig(configWithPort)
-	if err1 != nil {
-		fmt.Printf("Ошибка: %v\n", err1)
-	} else {
-		fmt.Printf("PORT найден: %s\n", port1)
-	}
-
-	port2, err2 := GetPortFromConfig(configWithoutPort)
-	if err2 != nil {
-		fmt.Printf("Ошибка: %v\n", err2)
-	} else {
-		fmt.Printf("PORT найден: %s\n", port2)
-	}
+	fmt.Println("\nРабота системы завершена.")
 }
