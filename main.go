@@ -1,37 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"simple-library/library"
+)
 
 func main() {
-	user1 := Reader{
-		ID:        1,
-		FirstName: "Арина",
-		LastName:  "Казиева",
-		IsActive:  true,
-	}
+	myLibrary := library.New()
 
-	book1 := Book{
-		ID:       1,
-		Year:     1867,
-		Title:    "Война и мир",
-		Author:   "Лев Толстой",
-		IsIssued: false,
-	}
-	fmt.Println(user1)
-	fmt.Println(book1)
-	book1.IssueBook(&user1)
-	fmt.Println(book1)
-	book1.ReturnBook()
-	fmt.Println(book1)
-	user1.AssignBook(&book1)
+	// Добавляем читателя
+	reader := myLibrary.AddReader("Арина", "Казиева")
+	fmt.Println("Зарегистрирован новый читатель:", reader.FirstName, reader.LastName)
 
-	fmt.Println("------------------------------------")
+	book := myLibrary.AddBook("Александр Толстой", "Александр Пушкин", 1833)
+	fmt.Printf("Книга '%s' успешно добавлена\n", book.Title)
 
-	n := []Notifier{}
-	em := EmailNotifier{EmailAddress: "arinakazieva01@gmail.com"}
-	sms := SMSNotifier{PhoneNumber: "+79633787686"}
-	n = append(n, em, sms)
-	for i := 0; i < len(n); i++ {
-		n[i].Notify("Ваша книга просрочена!")
-	}
+	// Выдаем книгу читателю
+	myLibrary.IssueBookToReader(book.ID, reader.ID)
+	fmt.Println("Состояние книги после выдачи:", book)
+
+	myLibrary.PrintStats()
 }
