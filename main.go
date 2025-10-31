@@ -2,22 +2,18 @@ package main
 
 import (
 	"fmt"
-	"simple-library/library"
+	"log"
+	"os"
 )
 
 func main() {
-	myLibrary := library.New()
+	fmt.Println("Простая запись в файл")
 
-	// Добавляем читателя
-	reader := myLibrary.AddReader("Арина", "Казиева")
-	fmt.Println("Зарегистрирован новый читатель:", reader.FirstName, reader.LastName)
+	data := []byte("Это первая строка лога.\nА это вторая строка лога\n")
+	err := os.WriteFile("log.txt", data, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	book := myLibrary.AddBook("Александр Толстой", "Александр Пушкин", 1833)
-	fmt.Printf("Книга '%s' успешно добавлена\n", book.Title)
-
-	// Выдаем книгу читателю
-	myLibrary.IssueBookToReader(book.ID, reader.ID)
-	fmt.Println("Состояние книги после выдачи:", book)
-
-	myLibrary.PrintStats()
+	fmt.Println("Файл log.txt успешно создан и записан")
 }
